@@ -18,15 +18,18 @@ module HAServices.Light where
                         | Toggle ServiceTarget [LightServiceOption]
 
     instance ToJSON LightService where
-        toJSON (TurnOn target options) = object $   [ "service" .= ("light.turn_on" :: String)
+        toJSON (TurnOn target options) = object     [ "service" .= ("light.turn_on" :: String)
                                                     , "target" .= toJSON target
-                                                    ] ++ convertOptionsToPairs options
-        toJSON (TurnOff target options) = object $  [ "service" .= ("light.turn_off" :: String)
+                                                    , "data" .= object (convertOptionsToPairs options)
+                                                    ]
+        toJSON (TurnOff target options) = object    [ "service" .= ("light.turn_off" :: String)
                                                     , "target" .= toJSON target
-                                                    ] ++ convertOptionsToPairs options
-        toJSON (Toggle target options) = object $   [ "service" .= ("light.toggle" :: String)
+                                                    , "data" .= object (convertOptionsToPairs options)
+                                                    ]
+        toJSON (Toggle target options) = object     [ "service" .= ("light.toggle" :: String)
                                                     , "target" .= toJSON target
-                                                    ] ++ convertOptionsToPairs options
+                                                    , "data" .= object (convertOptionsToPairs options)
+                                                    ]
 
     convertOptionsToPairs :: [LightServiceOption] -> [Pair]
     convertOptionsToPairs = concatMap convertOptionToPairs
