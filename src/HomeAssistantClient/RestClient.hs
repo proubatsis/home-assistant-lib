@@ -9,7 +9,7 @@ module HomeAssistantClient.RestClient where
     import Control.Monad.Reader (ReaderT, ask, liftIO)
     import Network.HTTP.Client (parseRequest, httpLbs, method, requestBody, requestHeaders, Request, RequestBody(RequestBodyLBS), newManager, defaultManagerSettings)
     import Data.ByteString.Char8 (pack)
-    import Data.ByteString.Lazy (fromStrict, ByteString)
+    import Data.ByteString.Lazy (ByteString)
     import Data.Aeson (encode, encode)
     
     type HomeAssistantRestClientContext = ReaderT HomeAssistantEnv IO

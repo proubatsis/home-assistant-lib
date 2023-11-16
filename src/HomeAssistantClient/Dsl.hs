@@ -2,7 +2,6 @@ module HomeAssistantClient.Dsl where
     import Control.Monad.Free (Free(..))
     import HAServices.Service (Service)
     import qualified HAServices.Service as Service
-    import HAServices.ServiceTarget (ServiceTarget)
     import Data.Aeson (Value)
     
     data ServiceInfo = ServiceInfo  { serviceDomain :: String
