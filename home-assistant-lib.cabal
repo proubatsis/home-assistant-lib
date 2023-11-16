@@ -26,7 +26,11 @@ source-repository head
 library
   exposed-modules:
       HAServices.Light
+      HAServices.Service
       HAServices.ServiceTarget
+      HomeAssistantClient.Dsl
+      HomeAssistantClient.RestClient
+      HomeAssistantEnv
       Lib
   other-modules:
       Paths_home_assistant_lib
@@ -38,6 +42,10 @@ library
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bytestring
+    , free
+    , http-client
+    , mtl
   default-language: Haskell2010
 
 executable home-assistant-lib-exe
@@ -52,7 +60,11 @@ executable home-assistant-lib-exe
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bytestring
+    , free
     , home-assistant-lib
+    , http-client
+    , mtl
   default-language: Haskell2010
 
 test-suite home-assistant-lib-test
@@ -68,5 +80,9 @@ test-suite home-assistant-lib-test
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bytestring
+    , free
     , home-assistant-lib
+    , http-client
+    , mtl
   default-language: Haskell2010

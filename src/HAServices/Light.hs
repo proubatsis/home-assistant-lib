@@ -4,7 +4,8 @@ module HAServices.Light where
 
     import Data.Word (Word8)
     import HAServices.ServiceTarget (ServiceTarget)
-    import Data.Aeson (ToJSON, toJSON, object, (.=))
+    import HAServices.Service
+    import Data.Aeson ((.=))
     import Data.Aeson.Types (Pair)
     
 
@@ -17,19 +18,17 @@ module HAServices.Light where
                         | TurnOff ServiceTarget [LightServiceOption]
                         | Toggle ServiceTarget [LightServiceOption]
 
-    instance ToJSON LightService where
-        toJSON (TurnOn target options) = object     [ "service" .= ("light.turn_on" :: String)
-                                                    , "target" .= toJSON target
-                                                    , "data" .= object (convertOptionsToPairs options)
-                                                    ]
-        toJSON (TurnOff target options) = object    [ "service" .= ("light.turn_off" :: String)
-                                                    , "target" .= toJSON target
-                                                    , "data" .= object (convertOptionsToPairs options)
-                                                    ]
-        toJSON (Toggle target options) = object     [ "service" .= ("light.toggle" :: String)
-                                                    , "target" .= toJSON target
-                                                    , "data" .= object (convertOptionsToPairs options)
-                                                    ]
+    instance Service LightService where
+        serviceDomain _ = "light"
+        serviceAction (TurnOn _ _) = "turn_on"
+        serviceAction (TurnOff _ _) = "turn_off"
+        serviceAction (Toggle _ _) = "toggle"
+        serviceTarget (TurnOn target _) = target
+        serviceTarget (TurnOff target _) = target
+        serviceTarget (Toggle target _) = target
+        serviceData (TurnOn _ options) = convertOptionsToPairs options
+        serviceData (TurnOff _ options) = convertOptionsToPairs options
+        serviceData (Toggle _ options) = convertOptionsToPairs options
 
     convertOptionsToPairs :: [LightServiceOption] -> [Pair]
     convertOptionsToPairs = concatMap convertOptionToPairs
