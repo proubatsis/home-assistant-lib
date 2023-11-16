@@ -4,7 +4,6 @@ module HomeAssistantClient.RestClient where
 
     import HomeAssistantClient.Dsl (HomeAssistantClient, HomeAssistantClientInstruction(..), ServiceInfo (..))
     import HomeAssistantEnv (HomeAssistantEnv(..))
-    import Control.Monad (liftM)
     import Control.Monad.Free (Free(..))
     import Control.Monad.Reader (ReaderT, ask, liftIO)
     import Network.HTTP.Client (parseRequest, httpLbs, method, requestBody, requestHeaders, Request, RequestBody(RequestBodyLBS), newManager, defaultManagerSettings)
