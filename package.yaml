@@ -29,6 +29,7 @@ dependencies:
 - containers
 - text
 - scientific
+- vector
 
 ghc-options:
 - -Wall

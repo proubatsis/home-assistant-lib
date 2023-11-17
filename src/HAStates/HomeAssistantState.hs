@@ -7,11 +7,13 @@ module HAStates.HomeAssistantState where
     import Data.Scientific (toRealFloat)
     import Data.Aeson (FromJSON, parseJSON, withObject, (.:))
     import qualified Data.Aeson as Aeson
+    import qualified Data.Vector as Vector
 
     data StateAttribute = StringAttribute String
                         | IntAttribute Int
                         | FloatAttribute Float
                         | BoolAttribute Bool
+                        | ListAttribute [StateAttribute]
                         | UnsupportedAttribute
                         deriving (Show, Eq)
 
@@ -21,6 +23,10 @@ module HAStates.HomeAssistantState where
                                                 (i, 0) -> IntAttribute i
                                                 _ -> FloatAttribute $ toRealFloat n
         parseJSON (Aeson.Bool b) = return $ BoolAttribute b
+        parseJSON (Aeson.Array a) = do
+            let list = Vector.toList a
+            listAttributes <- mapM parseJSON list
+            return $ ListAttribute listAttributes
         parseJSON _ = return UnsupportedAttribute
 
     data HomeAssistantState = HomeAssistantState    { entityId :: String
