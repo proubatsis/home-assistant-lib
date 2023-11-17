@@ -16,11 +16,14 @@ module HAServices.Service where
         serviceName :: a -> String
         serviceName service = serviceDomain service ++ "." ++ serviceAction service
 
-        -- The expected JSON format for a service call is different for webhooks and REST calls.
-        serviceWebhookJSON :: a -> Value
-        serviceWebhookJSON service = object [ "service" .= serviceName service
-                                            , "target" .= object [ fromString (targetIdName (serviceTarget service)) .= targetIdValue (serviceTarget service) ]
-                                            , "data" .= object (serviceData service)]
+        -- The expected JSON format for a service call is different for websockets and REST calls.
+        serviceWebsocketJSON :: a -> Int -> Value
+        serviceWebsocketJSON service callId = object    [ "id" .= callId
+                                                        , "type" .= ("call_service" :: String)
+                                                        , "domain" .= serviceDomain service
+                                                        , "service" .= serviceAction service
+                                                        , "target" .= object [ fromString (targetIdName (serviceTarget service)) .= targetIdValue (serviceTarget service) ]
+                                                        , "service_data" .= object (serviceData service)]
 
         serviceRestJSON :: a -> Value
         serviceRestJSON service = object $ (fromString (targetIdName (serviceTarget service)) .= targetIdValue (serviceTarget service)) : serviceData service

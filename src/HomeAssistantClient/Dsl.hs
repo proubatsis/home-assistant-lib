@@ -9,7 +9,7 @@ module HomeAssistantClient.Dsl where
     
     data ServiceInfo = ServiceInfo  { serviceDomain :: String
                                     , serviceAction :: String
-                                    , serviceWebhookJSON :: Value
+                                    , serviceWebsocketJSON :: Int -> Value
                                     , serviceRestJSON :: Value
                                     }
 
@@ -28,7 +28,7 @@ module HomeAssistantClient.Dsl where
     callService service =
         let serviceInfo = ServiceInfo { serviceDomain = Service.serviceDomain service
                                       , serviceAction = Service.serviceAction service
-                                      , serviceWebhookJSON = Service.serviceWebhookJSON service
+                                      , serviceWebsocketJSON = Service.serviceWebsocketJSON service
                                       , serviceRestJSON = Service.serviceRestJSON service
                                       }
         in Free (CallService serviceInfo Pure)
