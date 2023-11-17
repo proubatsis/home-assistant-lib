@@ -20,11 +20,13 @@ module HomeAssistantClient.WebSocketClient where
                                         }
     type HomeAssistantWebSocketClientContext = ReaderT WebSocketEnv (StateT WebSocketClientState IO)
 
-    runHomeAssistantClient :: HomeAssistantEnv -> HomeAssistantClient a -> WS.Connection -> IO a
-    runHomeAssistantClient env client connection = do
+    authenticate :: HomeAssistantEnv -> WS.Connection -> IO ()
+    authenticate env connection = do
         WS.sendTextData connection (encode $ Map.fromList [("type", "auth"), ("access_token", homeAssistantBearerToken env)])
         waitForAuthOkMsg connection
 
+    runHomeAssistantClient :: HomeAssistantEnv -> HomeAssistantClient a -> WS.Connection -> IO a
+    runHomeAssistantClient env client connection = do
         let webSocketEnv = WebSocketEnv { webSocketConnection = connection
                                         , homeAssistantEnv = env
                                         }
