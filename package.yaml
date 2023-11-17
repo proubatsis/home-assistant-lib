@@ -26,6 +26,9 @@ dependencies:
 - mtl
 - http-client
 - bytestring
+- containers
+- text
+- scientific
 
 ghc-options:
 - -Wall

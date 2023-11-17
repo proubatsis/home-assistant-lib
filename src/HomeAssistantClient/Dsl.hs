@@ -3,6 +3,9 @@ module HomeAssistantClient.Dsl where
     import HAServices.Service (Service)
     import qualified HAServices.Service as Service
     import Data.Aeson (Value)
+    import HAStates.HomeAssistantState
+    
+    type EntityId = String
     
     data ServiceInfo = ServiceInfo  { serviceDomain :: String
                                     , serviceAction :: String
@@ -11,11 +14,11 @@ module HomeAssistantClient.Dsl where
                                     }
 
     data HomeAssistantClientInstruction next    = CallService ServiceInfo (() -> next)
-                                                | HomeAssistantNoOp (() -> next)
+                                                | GetState EntityId (Maybe HomeAssistantState -> next)
 
     instance Functor HomeAssistantClientInstruction where
         fmap f (CallService service next) = CallService service (f . next)
-        fmap f (HomeAssistantNoOp next) = HomeAssistantNoOp (f . next)
+        fmap f (GetState entityId' next) = GetState entityId' (f . next)
 
     type HomeAssistantClient a = Free HomeAssistantClientInstruction a
 
@@ -28,5 +31,5 @@ module HomeAssistantClient.Dsl where
                                       }
         in Free (CallService serviceInfo Pure)
 
-    noOp :: HomeAssistantClient ()
-    noOp = Free (HomeAssistantNoOp Pure)
+    getState :: EntityId -> HomeAssistantClient (Maybe HomeAssistantState)
+    getState entityId' = Free (GetState entityId' Pure)
