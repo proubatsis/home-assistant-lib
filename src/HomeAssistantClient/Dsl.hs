@@ -14,10 +14,12 @@ module HomeAssistantClient.Dsl where
                                     }
 
     data HomeAssistantClientInstruction next    = CallService ServiceInfo (() -> next)
+                                                | GetStates ([HomeAssistantState] -> next)
                                                 | GetState EntityId (Maybe HomeAssistantState -> next)
 
     instance Functor HomeAssistantClientInstruction where
         fmap f (CallService service next) = CallService service (f . next)
+        fmap f (GetStates next) = GetStates (f . next)
         fmap f (GetState entityId' next) = GetState entityId' (f . next)
 
     type HomeAssistantClient a = Free HomeAssistantClientInstruction a
@@ -30,6 +32,9 @@ module HomeAssistantClient.Dsl where
                                       , serviceRestJSON = Service.serviceRestJSON service
                                       }
         in Free (CallService serviceInfo Pure)
+
+    getStates :: HomeAssistantClient [HomeAssistantState]
+    getStates = Free (GetStates Pure)
 
     getState :: EntityId -> HomeAssistantClient (Maybe HomeAssistantState)
     getState entityId' = Free (GetState entityId' Pure)

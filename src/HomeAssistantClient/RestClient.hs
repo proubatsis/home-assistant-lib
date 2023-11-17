@@ -11,7 +11,8 @@ module HomeAssistantClient.RestClient where
     import Data.ByteString.Char8 (pack)
     import Data.ByteString.Lazy (ByteString)
     import Data.Aeson (encode, encode, decode)
-
+    import Data.Maybe (fromMaybe)
+    
     type HomeAssistantRestClientContext = ReaderT HomeAssistantEnv IO
 
     runHomeAssistantClient :: HomeAssistantEnv -> HomeAssistantClient a -> IO a
@@ -33,6 +34,15 @@ module HomeAssistantClient.RestClient where
         _ <- liftIO (httpLbs request manager)
 
         return (next ())
+    interpretHomeAssistantClientInstruction (GetStates next) = do
+        let endpoint = "/api/states"
+
+        request <- buildGetRequest endpoint
+        manager <- liftIO (newManager defaultManagerSettings)
+        response <- liftIO (httpLbs request manager)
+
+        let states = decode (responseBody response) :: Maybe [HomeAssistantState]
+        return (next $ fromMaybe [] states)
     interpretHomeAssistantClientInstruction (GetState entityId' next) = do
         let endpoint = "/api/states/" ++ entityId'
 
