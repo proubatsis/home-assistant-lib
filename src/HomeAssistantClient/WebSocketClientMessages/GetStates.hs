@@ -2,10 +2,9 @@
 
 module HomeAssistantClient.WebSocketClientMessages.GetStates where
 
-    import Data.Aeson (ToJSON, toJSON, object, (.=))
+    import Data.Aeson (object, (.=), Value)
 
-    data GetStates = GetStates Int
-    instance ToJSON GetStates where
-        toJSON (GetStates callId) = object [ "id" .= callId
-                                           , "type" .= ("get_states" :: String)
-                                           ]
+    buildGetStatesMessage :: Int -> Value
+    buildGetStatesMessage callId = object   [ "id" .= callId
+                                            , "type" .= ("get_states" :: String)
+                                            ]

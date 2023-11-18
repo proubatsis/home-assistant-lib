@@ -8,7 +8,7 @@ module HAStates.HomeAssistantState where
     import Data.Aeson (FromJSON, parseJSON, withObject, (.:))
     import qualified Data.Aeson as Aeson
     import qualified Data.Vector as Vector
-
+    
     data StateAttribute = StringAttribute String
                         | IntAttribute Int
                         | FloatAttribute Float
