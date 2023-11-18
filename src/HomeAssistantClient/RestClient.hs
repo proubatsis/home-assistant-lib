@@ -3,10 +3,10 @@
 module HomeAssistantClient.RestClient where
 
     import HomeAssistantClient.Dsl (HomeAssistantClient, HomeAssistantClientInstruction(..), ServiceInfo (..))
-    import HomeAssistantEnv (HomeAssistantEnv(..))
+    import HomeAssistantEnv (HomeAssistantEnv(..), homeAssistantUrl)
     import HAStates.HomeAssistantState (HomeAssistantState)
     import Control.Monad.Free (Free(..))
-    import Control.Monad.Reader (ReaderT (runReaderT), asks, liftIO)
+    import Control.Monad.Reader (ReaderT (runReaderT), asks, liftIO, MonadReader (ask))
     import Network.HTTP.Client (parseRequest, httpLbs, method, requestBody, requestHeaders, Request, RequestBody(RequestBodyLBS), newManager, defaultManagerSettings, Response (responseBody))
     import Data.ByteString.Char8 (pack)
     import Data.ByteString.Lazy (ByteString)
