@@ -7,7 +7,7 @@ module HomeAssistantClient.WebSocketClient where
     import Control.Monad.State (StateT, get, put, runStateT)
     import Data.ByteString.Char8 (pack)
     import Data.ByteString.Lazy (ByteString)
-    import Data.Aeson (encode, encode, decode)
+    import Data.Aeson (encode, encode, decode, FromJSON)
     import Data.Maybe (fromMaybe)
     import Control.Concurrent (threadDelay)
     import qualified Network.WebSockets as WS
@@ -16,11 +16,11 @@ module HomeAssistantClient.WebSocketClient where
     import HomeAssistantClient.WebSocketClientMessages.StateChangedEvent (StateChangedEvent)
     import Network.Socket (withSocketsDo)
     import HomeAssistantClient.WebSocketClientMessages.SubscribeEvents (buildWebSocketClientMessageJSON, SubscribeEvents(SubscribeStateChangedEvents))
-    import HomeAssistantClient.WebSocketClientMessages.ResultMessage (ResultMessage(ResultMessage))
-    import qualified HomeAssistantClient.WebSocketClientMessages.ResultMessage as ResultMessage
+    import HomeAssistantClient.WebSocketClientMessages.ResultMessage (ResultMessage(..), decodeResultMessage)
     
     data WebSocketClientState = WebSocketClientState    { currentId :: Int }
     data WebSocketEnv = WebSocketEnv    { webSocketConnection :: WS.Connection
+                                        , homeAssistantStateByEntityId :: Map String HomeAssistantState
                                         , homeAssistantEnv :: HomeAssistantEnv
                                         }
     type HomeAssistantWebSocketClientContext = ReaderT WebSocketEnv (StateT WebSocketClientState IO)
@@ -79,23 +79,31 @@ module HomeAssistantClient.WebSocketClient where
 
     waitForSubscribeEventsOkMsg :: Int -> WS.Connection -> IO ()
     waitForSubscribeEventsOkMsg callId connection = do
+        result' <- waitForResultMsg 8 callId connection :: IO (Maybe (ResultMessage Int))
+        case result' of
+            Just (ResultMessage { resultSuccess = True }) -> return ()
+            _ -> error "Failed to subscribe to events"
+
+    waitForResultMsg :: FromJSON a => Int -> Int -> WS.Connection -> IO (Maybe (ResultMessage a))
+    waitForResultMsg 0 _ _ = return Nothing
+    waitForResultMsg retries callId connection = do
         msg <- WS.receiveData connection
-        let msgResult = (decode msg :: Maybe (ResultMessage Int))
+        let msgResult = decodeResultMessage msg
         case msgResult of
-            Just (ResultMessage { ResultMessage.id' = id', ResultMessage.success = True }) ->
+            Just (ResultMessage { resultId = id' }) -> do
                 if id' == callId
-                    then return ()
+                    then return msgResult
                     else do
                         threadDelay 1000000
-                        waitForSubscribeEventsOkMsg callId connection
+                        waitForResultMsg (retries - 1) callId connection
             _ -> do
                 threadDelay 1000000
-                waitForSubscribeEventsOkMsg callId connection
-        
+                waitForResultMsg (retries - 1) callId connection        
 
     runHomeAssistantClient :: HomeAssistantEnv -> WebSocketClientState -> HomeAssistantClient a -> WS.Connection -> IO (a, WebSocketClientState)
     runHomeAssistantClient env state client connection = do
         let webSocketEnv = WebSocketEnv { webSocketConnection = connection
+                                        , homeAssistantStateByEntityId = Map.empty
                                         , homeAssistantEnv = env
                                         }
         let readerResult = runReaderT (interpretHomeAssistantClient client) webSocketEnv
